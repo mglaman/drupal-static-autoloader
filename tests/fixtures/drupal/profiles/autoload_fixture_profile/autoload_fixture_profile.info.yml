@@ -1,0 +1,4 @@
+name: Autoload Fixture Profile
+type: profile
+version: VERSION
+hidden: true
