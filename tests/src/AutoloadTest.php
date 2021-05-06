@@ -92,8 +92,15 @@ final class AutoloadTest extends TestCase {
   }
 
   public function providesTestClasses() {
-    // @todo needs more tests of files from core/tests/*
     yield ['class_exists', \Drupal\BuildTests\Composer\ComposerValidateTest::class];
+    yield ['class_exists', \Drupal\FunctionalJavascriptTests\DrupalSelenium2Driver::class];
+    yield ['class_exists', \Drupal\FunctionalTests\BrowserTestBaseUserAgentTest::class];
+    yield ['class_exists', \Drupal\KernelTests\Component\Render\FormattableMarkupKernelTest::class];
+    yield ['class_exists', \Drupal\Tests\ComposerIntegrationTest::class];
+    yield ['class_exists', \Drupal\TestSite\Commands\TestSiteInstallCommand::class];
+    yield ['class_exists', \Drupal\TestTools\PhpUnitCompatibility\RunnerVersion::class];
+    // This trait is used by Functional tests.
+    yield ['trait_exists', \Drupal\Tests\block\Traits\BlockCreationTrait::class];
   }
 
 }
