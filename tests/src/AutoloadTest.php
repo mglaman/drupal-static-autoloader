@@ -72,7 +72,9 @@ final class AutoloadTest extends TestCase {
     yield ['class_exists', \Drupal\Core\PrivateKey::class];
     yield ['class_exists', \Drupal\Core\Template\Attribute::class];
     yield ['class_exists', \Drupal\action\ActionListBuilder::class];
-    yield ['class_exists', \Drupal\olivero\OliveroPreRender::class];
+    if (\Drupal::VERSION[0] >= 9) {
+        yield ['class_exists', \Drupal\olivero\OliveroPreRender::class];
+    }
     yield ['class_exists', \Drupal\autoload_fixture_profile\ClassInProfile::class];
   }
 
