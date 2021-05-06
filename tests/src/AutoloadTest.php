@@ -19,8 +19,12 @@ final class AutoloadTest extends TestCase {
     if ($expected_error !== '') {
       $this->expectException(\InvalidArgumentException::class);
       $this->expectExceptionMessage($expected_error);
-    } else {
+    } elseif (method_exists($this, 'expectNotToPerformAssertions')) {
       $this->expectNotToPerformAssertions();
+    }
+    else {
+        // Backwards compat when on PHPUnit 6 for Drupal 8 testing.
+        $this->addToAssertionCount(1);
     }
     new Autoloader($path);
   }
@@ -72,7 +76,9 @@ final class AutoloadTest extends TestCase {
     yield ['class_exists', \Drupal\Core\PrivateKey::class];
     yield ['class_exists', \Drupal\Core\Template\Attribute::class];
     yield ['class_exists', \Drupal\action\ActionListBuilder::class];
-    yield ['class_exists', \Drupal\olivero\OliveroPreRender::class];
+    if (\Drupal::VERSION[0] >= 9) {
+        yield ['class_exists', \Drupal\olivero\OliveroPreRender::class];
+    }
     yield ['class_exists', \Drupal\autoload_fixture_profile\ClassInProfile::class];
   }
 
