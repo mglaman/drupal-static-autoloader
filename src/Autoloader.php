@@ -126,8 +126,17 @@ final class Autoloader
             // Suppress filesystem errors in case a directory cannot be accessed.
             \RecursiveIteratorIterator::CATCH_GET_CHILD
         );
+
         foreach ($iterator as $fileinfo) {
-            if ($fileinfo->getFilename() === 'bootstrap.inc') {
+            // Check if this file was added as an autoloaded file in the Drupal
+            // core composer.json file.
+            // @note: In Drupal 8, includes/bootstrap.inc was not added, but it
+            // was added in Drupal 9. This check handles any future includes
+            // that are already registered.
+            //
+            // @see \Composer\Autoload\AutoloadGenerator::getFileIdentifier().
+            $autoloadFileIdentifier = md5('drupal/core:includes/' . $fileinfo->getFilename());
+            if (isset($GLOBALS['__composer_autoload_files'][$autoloadFileIdentifier])) {
                 continue;
             }
             if ($fileinfo->getExtension() === 'inc') {
