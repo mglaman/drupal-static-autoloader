@@ -53,6 +53,8 @@ final class Autoloader
 
     public function register(): void
     {
+        $this->loadLegacyIncludes();
+
         $this->extensionDiscovery = new ExtensionDiscovery($this->drupalRoot);
 
       // Discover all available profiles.
@@ -66,8 +68,6 @@ final class Autoloader
         $this->registerExtensions('theme');
         $this->registerExtensions('profile');
         $this->registerExtensions('theme_engine');
-
-        $this->loadLegacyIncludes();
 
         $this->registerTestNamespaces();
     }
