@@ -19,8 +19,12 @@ final class AutoloadTest extends TestCase {
     if ($expected_error !== '') {
       $this->expectException(\InvalidArgumentException::class);
       $this->expectExceptionMessage($expected_error);
-    } else {
+    } elseif (method_exists($this, 'expectNotToPerformAssertions')) {
       $this->expectNotToPerformAssertions();
+    }
+    else {
+        // Backwards compat when on PHPUnit 6 for Drupal 8 testing.
+        $this->addToAssertionCount(1);
     }
     new Autoloader($path);
   }
