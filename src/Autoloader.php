@@ -73,6 +73,7 @@ final class Autoloader
         $this->registerExtensions('theme_engine');
 
         $this->registerTestNamespaces();
+        $this->loadDrushIncludes();
     }
 
     private function registerExtensions(string $type)
@@ -149,11 +150,31 @@ final class Autoloader
 
     private function loadLegacyIncludes(): void
     {
+        $this->loadIncludesByDirectory('drupal/core', $this->drupalRoot . '/core/includes');
+    }
+
+    private function loadDrushIncludes()
+    {
+        if (class_exists(\Drush\Drush::class)) {
+            $reflect = new \ReflectionClass(\Drush\Drush::class);
+            if ($reflect->getFileName() !== false) {
+                $levels = 2;
+                if (\Drush\Drush::getMajorVersion() < 9) {
+                    $levels = 3;
+                }
+                $drushDir = dirname($reflect->getFileName(), $levels);
+                $this->loadIncludesByDirectory('drush/drush', $drushDir);
+            }
+        }
+    }
+
+    private function loadIncludesByDirectory(string $package, string $absolute_path): void
+    {
         $flags = \FilesystemIterator::UNIX_PATHS;
         $flags |= \FilesystemIterator::SKIP_DOTS;
         $flags |= \FilesystemIterator::FOLLOW_SYMLINKS;
         $flags |= \FilesystemIterator::CURRENT_AS_SELF;
-        $directory_iterator = new \RecursiveDirectoryIterator($this->drupalRoot . '/core/includes', $flags);
+        $directory_iterator = new \RecursiveDirectoryIterator($absolute_path, $flags);
         $iterator = new \RecursiveIteratorIterator(
             $directory_iterator,
             \RecursiveIteratorIterator::LEAVES_ONLY,
@@ -162,14 +183,11 @@ final class Autoloader
         );
 
         foreach ($iterator as $fileinfo) {
-            // Check if this file was added as an autoloaded file in the Drupal
-            // core composer.json file.
-            // @note: In Drupal 8, includes/bootstrap.inc was not added, but it
-            // was added in Drupal 9. This check handles any future includes
-            // that are already registered.
+            // Check if this file was added as an autoloaded file in a
+            // composer.json file.
             //
             // @see \Composer\Autoload\AutoloadGenerator::getFileIdentifier().
-            $autoloadFileIdentifier = md5('drupal/core:includes/' . $fileinfo->getFilename());
+            $autoloadFileIdentifier = md5($package . ':includes/' . $fileinfo->getFilename());
             if (isset($GLOBALS['__composer_autoload_files'][$autoloadFileIdentifier])) {
                 continue;
             }
