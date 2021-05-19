@@ -58,6 +58,7 @@ final class AutoloadTest extends TestCase {
    * @dataProvider providesClasses
    * @dataProvider providesTestClasses
    * @dataProvider providesFunctions
+   * @dataProvider providesConstants
    */
   public function testExists(string $exists_function, string $class_name): void {
     self::assertContains($exists_function, [
@@ -65,6 +66,7 @@ final class AutoloadTest extends TestCase {
       'trait_exists',
       'interface_exists',
       'function_exists',
+      'defined',
     ]);
     Autoloader::getLoader(__DIR__ . '/../fixtures/drupal')->register();
     self::assertTrue($exists_function($class_name), "$exists_function $class_name");
@@ -99,6 +101,8 @@ final class AutoloadTest extends TestCase {
     yield ['function_exists', 'node_token_info'];
     yield ['function_exists', 'node_views_query_substitutions'];
     yield ['function_exists', 'node_views_analyze'];
+    // Drush
+    yield ['function_exists', 'drush_log'];
   }
 
   public function providesTestClasses() {
@@ -111,6 +115,10 @@ final class AutoloadTest extends TestCase {
     yield ['class_exists', \Drupal\TestTools\PhpUnitCompatibility\RunnerVersion::class];
     // This trait is used by Functional tests.
     yield ['trait_exists', \Drupal\Tests\block\Traits\BlockCreationTrait::class];
+  }
+
+  public function providesConstants() {
+    yield ['defined', 'DRUSH_BOOTSTRAP_DRUPAL_DATABASE'];
   }
 
 }
