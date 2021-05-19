@@ -124,12 +124,14 @@ final class Autoloader
         }
 
         // Iterate over hook_hook_info implementations and load those files.
-        $hook_info_implementations = array_merge(...$hook_info_implementations);
-        foreach ($hook_info_implementations as $hook_info_group) {
-            foreach ($extensions as $extension_name => $extension) {
-                $include_file = $this->drupalRoot . '/' . $extension->getPath() . '/' . $extension_name . '.' . $hook_info_group . '.inc';
-                if (file_exists($include_file)) {
-                    include_once $include_file;
+        if (count($hook_info_implementations) > 0) {
+            $hook_info_implementations = array_merge(...$hook_info_implementations);
+            foreach ($hook_info_implementations as $hook_info_group) {
+                foreach ($extensions as $extension_name => $extension) {
+                    $include_file = $this->drupalRoot . '/' . $extension->getPath() . '/' . $extension_name . '.' . $hook_info_group . '.inc';
+                    if (file_exists($include_file)) {
+                        include_once $include_file;
+                    }
                 }
             }
         }
