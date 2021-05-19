@@ -86,15 +86,15 @@ final class Autoloader
 
         $extensions = $this->extensionDiscovery->scan($type);
         foreach ($extensions as $extension_name => $extension) {
-            $path = $this->drupalRoot . '/' . $extension->getPath() . '/src';
-            $this->autoloader->addPsr4("Drupal\\{$extension_name}\\", $path);
+            $extension_path = $this->drupalRoot . '/' . $extension->getPath();
+            $this->autoloader->addPsr4("Drupal\\{$extension_name}\\", $extension_path . '/src');
 
             // @see drupal_phpunit_get_extension_namespaces().
-            $test_dir = $this->drupalRoot . '/' . $extension->getPath() . '/tests/src';
+            $test_dir = $extension_path . '/tests/src';
             foreach (self::PHPUNIT_TEST_SUITES as $suite_name) {
                 $suite_dir = $test_dir . '/' . $suite_name;
                 if (is_dir($suite_dir)) {
-                    $this->autoloader->addPsr4("Drupal\\Tests\{$extension_name}\\$suite_name\\", $path);
+                    $this->autoloader->addPsr4("Drupal\\Tests\\$extension_name\\$suite_name\\", $suite_dir);
                 }
             }
             // Extensions can have a \Drupal\extension\Traits namespace for
@@ -105,6 +105,18 @@ final class Autoloader
             }
 
             $this->loadExtension($extension);
+
+            // Load schema and post_update files.
+            if (file_exists($extension_path . '/' . $extension_name . '.install')) {
+                // These are ignored as they cause crashes.
+                $ignored_install_files = ['entity_test', 'entity_test_update', 'update_test_schema'];
+                if (!in_array($extension_name, $ignored_install_files, true)) {
+                    require_once $extension_path . '/' . $extension_name . '.install';
+                }
+            }
+            if (file_exists($extension_path . '/' . $extension_name . '.post_update.php')) {
+                require_once $extension_path . '/' . $extension_name . '.post_update.php';
+            }
 
             // Mimics the buildHookInfo method in the module handler.
             // @see \Drupal\Core\Extension\ModuleHandler::buildHookInfo

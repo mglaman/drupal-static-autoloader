@@ -82,6 +82,7 @@ final class AutoloadTest extends TestCase {
         yield ['class_exists', \Drupal\olivero\OliveroPreRender::class];
     }
     yield ['class_exists', \Drupal\autoload_fixture_profile\ClassInProfile::class];
+    yield ['class_exists', \Drupal\Tests\system\Functional\Batch\PageTest::class];
   }
 
   public function providesFunctions() {
@@ -103,6 +104,13 @@ final class AutoloadTest extends TestCase {
     yield ['function_exists', 'node_views_analyze'];
     // Drush
     yield ['function_exists', 'drush_log'];
+    // Module .install
+    yield ['function_exists', 'node_requirements'];
+    if (\Drupal::VERSION[0] >= 9) {
+        yield ['function_exists', 'node_post_update_glossary_view_published'];
+    } else {
+        yield ['function_exists', 'node_post_update_configure_status_field_widget'];
+    }
   }
 
   public function providesTestClasses() {
