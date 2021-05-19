@@ -48,7 +48,8 @@ jobs:
         if: ${{ matrix.drupal == '^9.0' }}
       - name: "PHPCS"
         run: "php vendor/bin/phpcs src"
-#      - name: "PHPStan"
-#        run: "php vendor/bin/phpstan analyze src"
+      - name: "PHPStan"
+        # @todo run on all of src once Drupal code cleaned up.
+        run: "php vendor/bin/phpstan analyze src/Autoloader.php"
       - name: "PHPUnit"
         run: "php vendor/bin/phpunit --debug"

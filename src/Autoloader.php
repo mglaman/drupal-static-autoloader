@@ -29,6 +29,9 @@ final class Autoloader
    */
     private $extensionDiscovery;
 
+    // Taken from drupal_phpunit_get_extension_namespaces.
+    private const PHPUNIT_TEST_SUITES = ['Unit', 'Kernel', 'Functional', 'Build', 'FunctionalJavascript'];
+
     public static function getLoader(string $root): self
     {
         return new self($root);
@@ -77,8 +80,9 @@ final class Autoloader
         if ($type !== 'module' && $type !== 'theme' && $type !== 'profile' && $type !== 'theme_engine') {
             throw new \InvalidArgumentException("Must be 'module' or 'theme' but got $type");
         }
-        // Taken from drupal_phpunit_get_extension_namespaces.
-        $suite_names = ['Unit', 'Kernel', 'Functional', 'Build', 'FunctionalJavascript'];
+        // Tracks implementations of hook_hook_info for loading of those files.
+        $hook_info_implementations = [];
+
         $extensions = $this->extensionDiscovery->scan($type);
         foreach ($extensions as $extension_name => $extension) {
             $path = $this->drupalRoot . '/' . $extension->getPath() . '/src';
@@ -86,7 +90,7 @@ final class Autoloader
 
             // @see drupal_phpunit_get_extension_namespaces().
             $test_dir = $this->drupalRoot . '/' . $extension->getPath() . '/tests/src';
-            foreach ($suite_names as $suite_name) {
+            foreach (self::PHPUNIT_TEST_SUITES as $suite_name) {
                 $suite_dir = $test_dir . '/' . $suite_name;
                 if (is_dir($suite_dir)) {
                     $this->autoloader->addPsr4("Drupal\\Tests\{$extension_name}\\$suite_name\\", $path);
@@ -100,6 +104,36 @@ final class Autoloader
             }
 
             $this->loadExtension($extension);
+
+            // Mimics the buildHookInfo method in the module handler.
+            // @see \Drupal\Core\Extension\ModuleHandler::buildHookInfo
+            if ($type === 'module' || $type === 'profile') {
+                $hook_info_function = $extension_name . '_hook_info';
+                if (function_exists($hook_info_function)) {
+                    $result = $hook_info_function();
+                    if (is_array($result)) {
+                        $groups = array_unique(array_values(array_map(static function (array $hook_info) {
+                            return $hook_info['group'];
+                        }, $result)));
+                        // We do not need the full array structure, we only care
+                        // about the group name for loading files.
+                        $hook_info_implementations[] = $groups;
+                    }
+                }
+            }
+        }
+
+        // Iterate over hook_hook_info implementations and load those files.
+        if (count($hook_info_implementations) > 0) {
+            $hook_info_implementations = array_merge(...$hook_info_implementations);
+            foreach ($hook_info_implementations as $hook_info_group) {
+                foreach ($extensions as $extension_name => $extension) {
+                    $include_file = $this->drupalRoot . '/' . $extension->getPath() . '/' . $extension_name . '.' . $hook_info_group . '.inc';
+                    if (file_exists($include_file)) {
+                        include_once $include_file;
+                    }
+                }
+            }
         }
     }
 

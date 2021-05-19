@@ -95,6 +95,10 @@ final class AutoloadTest extends TestCase {
     yield ['function_exists', 'bartik_preprocess_html'];
     // Theme Engine extension file (.engine)
     yield ['function_exists', 'twig_theme'];
+    // hook_hook_info autoloading.
+    yield ['function_exists', 'node_token_info'];
+    yield ['function_exists', 'node_views_query_substitutions'];
+    yield ['function_exists', 'node_views_analyze'];
   }
 
   public function providesTestClasses() {

@@ -2,6 +2,6 @@ includes:
 	- vendor/phpstan/phpstan-strict-rules/rules.neon
 	- vendor/phpstan/phpstan-deprecation-rules/rules.neon
 parameters:
-	level: 0
+	level: 1
 	checkGenericClassInNonGenericObjectType: false
 	checkMissingIterableValueType: false
